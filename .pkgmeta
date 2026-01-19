@@ -1,0 +1,12 @@
+package-as: LibBlzSettings-1.0
+
+externals:
+  LibStub: https://repos.curseforge.com/wow/libstub/trunk
+
+enable-nolib-creation: no
+
+ignore:
+  - .gitignore
+  - .gitattributes
+  - .github/*
+  - README.md
