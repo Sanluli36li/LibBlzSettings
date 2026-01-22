@@ -438,32 +438,6 @@ local CONTROL_TYPE_METADATA = {
             initializer.OnHide = OnHide
 
             return setting, initializer
-        end,
-
-        onControlInit = function (frame, dataTbl)
-            --[[
-            local source = {}
-            --
-            frame.Control.Dropdown:RegisterCallback(DropdownButtonMixin.Event.OnUpdate, function (...)
-                local lib = LibStub("LibSharedMedia-3.0")
-
-                if dataTbl.mediaType == lib.MediaType.FONT then
-                    source.font, source.fontSize = frame.Control.Dropdown.Text:GetFont()
-                    frame.Control.Dropdown.Text:SetFont(frame:GetSetting():GetValue(), source.fontSize)
-                end
-                
-            end)
-
-            frame.Control.Dropdown:RegisterCallback(DropdownButtonMixin.Event.OnMenuOpen, function (...)
-                if frame.Control.Dropdown.menu then
-                end
-            end)
-            frame.Release = function()
-                frame.Control.Dropdown.Text:SetFont(source.font, source.fontSize)
-                frame.Release = SettingsDropdownControlMixin.Release
-                SettingsDropdownControlMixin.Release(frame)
-            end
-            ]]
         end
     }
 }
@@ -726,16 +700,6 @@ end
 ----------------------------------------
 ---   Blizzard Function Secure Hook  ---
 ----------------------------------------
-
-hooksecurefunc(SettingsControlMixin, "Init", function (self, initializer)
-    if initializer and initializer.LibBlzSettingsData then
-        local data = initializer.LibBlzSettingsData
-        if type(CONTROL_TYPE_METADATA[data.controlType].onControlInit) == "function" then
-            CONTROL_TYPE_METADATA[data.controlType].onControlInit(self, initializer.LibBlzSettingsData)
-        end
-    end
-end)
-
 hooksecurefunc(SettingsCheckboxDropdownControlMixin, "Init", function (self, initializer)
     if initializer and initializer.LibBlzSettingsData then
         -- Defaults...
