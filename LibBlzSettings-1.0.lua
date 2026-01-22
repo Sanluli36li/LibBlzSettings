@@ -139,7 +139,7 @@ local CONTROL_TYPE_METADATA = {
             end
         },
         buildFunction = function (addOnName, category, layout, dataTbl, database)
-            local options, varType = Utils.CreateOptions(dataTbl.options)
+            local options, varType = Utils.CreateOptions(dataTbl.options, dataTbl.isCheckboxDropdown)
             local setting = LibBlzSettings.RegisterSetting(addOnName, category, dataTbl, database, varType)
 
             local data = {
@@ -150,6 +150,10 @@ local CONTROL_TYPE_METADATA = {
             }
 
             local initializer = Settings.CreateSettingInitializer("SettingsDropdownControlTemplate", data)
+            
+            if dataTbl.isCheckboxDropdown then
+                initializer.getSelectionTextFunc = Utils.CreateSelectionTextFunction(UNIT_NAMEPLATES_STACK_NONE or "None")
+            end
 
             if dataTbl.canSearch or dataTbl.canSearch == nil then
                 initializer:AddSearchTags(dataTbl.name)
@@ -256,7 +260,7 @@ local CONTROL_TYPE_METADATA = {
             dropdown = CONTROL_TYPE.DROPDOWN
         },
         buildFunction = function (addOnName, category, layout, dataTbl, database)
-            local dropdownOptions, dropdownVarType = Utils.CreateOptions(dataTbl.dropdown.options)
+            local dropdownOptions, dropdownVarType = Utils.CreateOptions(dataTbl.dropdown.options, dataTbl.dropdown.isCheckboxDropdown)
             local checkboxSetting = LibBlzSettings.RegisterSetting(addOnName, category, dataTbl, database, Settings.VarType.Boolean)
             local dropdownSetting = LibBlzSettings.RegisterSetting(addOnName, category, dataTbl.dropdown, database, dropdownVarType, dataTbl.dropdown.name or dataTbl.name)
 
@@ -273,6 +277,10 @@ local CONTROL_TYPE_METADATA = {
                 dropDownTooltip = dataTbl.dropdown.tooltip or dataTbl.tooltip,
             }
             local initializer = Settings.CreateSettingInitializer("SettingsCheckboxDropdownControlTemplate", data)
+
+            if dataTbl.dropdown.isCheckboxDropdown then
+                initializer.getSelectionTextFunc = Utils.CreateSelectionTextFunction(UNIT_NAMEPLATES_STACK_NONE or "None")
+            end
 
             if dataTbl.canSearch or dataTbl.canSearch == nil then
                 initializer:AddSearchTags(dataTbl.name)
@@ -474,7 +482,7 @@ function LibBlzSettings.RegisterSetting(addOnName, category, dataTbl, database, 
     return setting
 end
 
-function Utils.CreateOptions(options)
+function Utils.CreateOptions(options, isCheckboxDropdown)
     local varType = Settings.VarType.Number
     local entrys = {}
     if options then
@@ -483,13 +491,17 @@ function Utils.CreateOptions(options)
                 tinsert(entrys, {i, option})
             elseif type(option) == "table" then
                 if #option == 0 and option.name then
-                    tinsert(entrys, {option.value or i, option.name, option.tooltip})
-                    if option.value and type(option.value) ~= "number" then
-                        varType = Settings.VarType.String
+                    if isCheckboxDropdown then
+                        tinsert(entrys, {i, option.name, option.tooltip})
+                    else
+                        tinsert(entrys, {option.value or i, option.name, option.tooltip})
+                        if option.value and type(option.value) ~= "number" then
+                            varType = Settings.VarType.String
+                        end
                     end
                 elseif #option == 1 then
                     tinsert(entrys, {i, option[1]})
-                elseif #option == 2 then
+                elseif #option == 2 or (isCheckboxDropdown and #option >= 2) then
                     tinsert(entrys, {i, option[1], option[2]})
                 elseif #option == 3 then
                     tinsert(entrys, {option[1], option[2], option[3]})
@@ -506,9 +518,13 @@ function Utils.CreateOptions(options)
 
         for _, entry in ipairs(entrys) do
             if varType == Settings.VarType.String then
-                container:Add(tostring(entry[1]), entry[2], entry[3])
+                container:Add(tostring(entry[1]), entry[2], entry[3])   
             else
-                container:Add(entry[1], entry[2], entry[3])
+                if isCheckboxDropdown then
+                    container:AddCheckbox(entry[1], entry[2], entry[3])
+                else
+                    container:Add(entry[1], entry[2], entry[3])
+                end
             end
         end
 
@@ -564,6 +580,17 @@ function Utils.CheckControl(dataTbl, controlType)
         end
     end
     return true
+end
+
+ function Utils.CreateSelectionTextFunction(text)
+	return function(selections)
+		if #selections == 0 then
+			return text;
+		end
+
+		-- Returning nil to use default behavior in DropdownSelectionTextMixin:UpdateToMenuSelections.
+		return nil;
+	end
 end
 
 local function SetupControl(addOnName, category, layout, dataTbl, database)
