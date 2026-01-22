@@ -727,47 +727,8 @@ end
 ----------------------------------------
 ---   Blizzard Function Secure Hook  ---
 ----------------------------------------
-hooksecurefunc(SettingsCheckboxDropdownControlMixin, "Init", function (self, initializer)
-    if initializer and initializer.LibBlzSettingsData then
-        -- Defaults...
-        local function OnCheckboxSettingValueChanged(o, setting, value)
-            self.Checkbox:SetValue(value)
-            self:EvaluateState()
-        end
-        self.cbrHandles:SetOnValueChangedCallback(initializer.data.cbSetting:GetVariable(), OnCheckboxSettingValueChanged)
 
-        local function OnDropdownSettingValueChanged(o, setting, value)
-            local dropdownOptions = initializer.data.dropdownOptions
-            local dropdownSetting = initializer.data.dropdownSetting
 
-            local inserter = Settings.CreateDropdownOptionInserter(dropdownOptions);
-	        local initDropdownTooltip = Settings.CreateOptionsInitTooltip(dropdownSetting, initializer:GetName(), initializer:GetTooltip(), dropdownOptions);
-            Settings.InitDropdown(self.Control.Dropdown, dropdownSetting, inserter, initDropdownTooltip)
-        end
-        self.cbrHandles:SetOnValueChangedCallback(initializer.data.dropdownSetting:GetVariable(), OnDropdownSettingValueChanged);
-
-        -- 暴雪自带的下拉菜单的选项不会跟随父选项更新禁用, 覆盖方法
-        function self:EvaluateState()
-            SettingsCheckboxDropdownControlMixin.EvaluateState(self)
-            local enabled = SettingsControlMixin.IsEnabled(self)
-            self.Control:SetEnabled(enabled and initializer.data.cbSetting:GetValue())
-            self.Checkbox:SetEnabled(enabled)
-	        self:DisplayEnabled(enabled)
-        end
-        -- 用完记得还回去
-        function self:Release()
-            -- 选择框不会自动重置 防止复用时被禁用
-            self.Checkbox:SetEnabled(true)
-	        self:DisplayEnabled(true)
-
-            self.EvaluateState = SettingsCheckboxDropdownControlMixin.EvaluateState
-            self.Release = SettingsCheckboxDropdownControlMixin.Release
-            SettingsCheckboxDropdownControlMixin.Release(self)
-        end
-
-        self:EvaluateState()
-    end
-end)
 
 --[[
     STATIC
@@ -816,3 +777,5 @@ function LibBlzSettings:RegisterVerticalSettingsTable(addOnName, dataTbl, databa
         return category, layout
     end
 end
+
+
