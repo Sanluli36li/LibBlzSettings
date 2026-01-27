@@ -595,11 +595,9 @@ end
 
 local function SetupControl(addOnName, category, layout, dataTbl, database)
     if CONTROL_TYPE_METADATA[dataTbl.controlType] and Utils.CheckControl(dataTbl) then
-        --[[
-        if type(dataTbl.isVisible) == "function" and not dataTbl.isVisible() then
+        if type(dataTbl.require) == "function" and not dataTbl.require() then
             return
         end
-        ]]
         if type(CONTROL_TYPE_METADATA[dataTbl.controlType].buildFunction) == "function" then
             -- 指定额外的表 (而不是分类使用的表) 来储存数据
             if type(dataTbl.database) == "table" then
