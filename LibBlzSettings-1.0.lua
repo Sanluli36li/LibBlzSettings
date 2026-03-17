@@ -172,7 +172,7 @@ local CONTROL_TYPE_METADATA = {
             local checkboxSetting = LibBlzSettings.RegisterSetting(addOnName, category, dataTbl, database, Settings.VarType.Boolean)
 
             local data = {
-                name = dataTbl.name,
+                name = dataTbl.name or "",
                 tooltip = dataTbl.tooltip,
                 setting = checkboxSetting,
                 buttonText = dataTbl.buttonText,
@@ -182,7 +182,9 @@ local CONTROL_TYPE_METADATA = {
             local initializer = Settings.CreateElementInitializer("SettingButtonControlTemplate", data)
 
             if dataTbl.canSearch or dataTbl.canSearch == nil then
-                initializer:AddSearchTags(dataTbl.name)
+                if dataTbl.name then
+                    initializer:AddSearchTags(dataTbl.name)
+                end
                 initializer:AddSearchTags(dataTbl.buttonText)
             end
 
